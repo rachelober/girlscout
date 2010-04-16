@@ -18,7 +18,8 @@ class Girlscout
     paths = Array.new
     @file = File.open(@file)
     doc = Nokogiri::XML(@file)
-    urls = doc.xpath("//loc").to_a
+    doc.remove_namespaces!
+    urls = doc.xpath("//urlset/url/loc").to_a
     urls.map! do |url|
       url.content.gsub(/http:\/\/www./, '')
     end
