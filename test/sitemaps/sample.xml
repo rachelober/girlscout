@@ -30,6 +30,9 @@
     <loc>http://www.foodandwine.com/slideshows/peas</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/ururjrnrkrlri</loc>
+    <loc>http://www.foodandwine.com/willbe404</loc>
+  </url>
+  <url>
+    <loc>http://www.foodandwine.com/will|be|error</loc>
   </url>
 </urlset>

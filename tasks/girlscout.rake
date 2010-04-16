@@ -13,8 +13,10 @@ namespace :girlscout do
 
   desc 'Crawls all the urls in the current sitemap'
   task :crawl => [:setup, :cleanup] do
-    scout = Girlscout.new(Rails.root.join('public/sitemap.xml'))
-    responses = scout.crawl
+    file = ENV['from'] || 'public/sitemap.xml'
+    subdomain = ENV['subdomain'] || 'www'
+    scout = Girlscout.new(Rails.root.join(file))
+    responses = scout.crawl(subdomain)
     if responses.empty?
       puts "No URIs found in sitemap.xml"
     else
@@ -25,7 +27,7 @@ namespace :girlscout do
         url_ary.each do |url|
           yml.puts url
         end
-        puts "#{response}: #{url_ary.count}"
+        puts "#{response}: #{url_ary.size}"
       end
     end
   end
