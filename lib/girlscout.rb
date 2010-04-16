@@ -8,7 +8,6 @@ class Girlscout
   attr_reader :file
   
   def initialize(file)
-    file = File.expand_path(File.dirname(__FILE__) + "#{file}")
     raise ArgumentError.new("Can't find #{file}.") if !File.exists?(file)
     raise ArgumentError.new("File #{file} is not readable.") if !File.readable?(file)
     @file = file

@@ -1,39 +1,37 @@
 require File.expand_path(File.join(File.dirname(__FILE__), "../lib/girlscout.rb"))
+require 'fileutils'
 
-desc 'Sets up Girlscout'
-task :setup do
-end
-
-desc 'Crawls all the urls in the current sitemap'
-task :girlscout do
-  sub_domains = [:www, :beta, :qa]
-  responses = Hash.new
-  paths = gather_paths
-  paths.each do |path|
-    begin
-      response = Net::HTTP.get_response("#{sub_domain.first}.foodandwine.com", path)
-      responses[response.code.to_sym] << "#{sub_domain.first}.foodandwine.com/#{path}"
-    rescue Timeout::Error => e
-      puts $!
-    rescue
-      puts $!
+namespace :girlscout do
+  desc 'Sets up Girlscout'
+  task :setup do
+    FileUtils.mkdir_p(Rails.root.join("db/data/girlscout"))
+    if !File.exists?(Rails.root.join("public/sitemap.xml"))
+      FileUtils.cp(Rails.root.join("vendor/plugins/girlscout/samples/sitemap.xml"), Rails.root.join("public/sitemap.xml"))
+      puts "A sample sitemap.xml has been placed in your /public directory. Please edit it with the urls you would like to crawl."
     end
   end
-  puts "Results:"
-  responses.each do |response, url_ary|
-    yml = File.open("../db/data/sitemap_test/#{response}.yml", "r+")
-    url_ary.each do |url|
-      yml.puts url
-    end
-    puts "#{response}: #{url_ary.count}"
-  end
-end
 
-Rake::TestTask.new do |t|
-  t.libs << 'lib'
-  test_files = FileList['test/**/*_test.rb']
-  test_files.exclude('test/rails/*')
-  test_files.exclude('test/haml/spec/*')
-  t.test_files = test_files
-  t.verbose = true
+  desc 'Crawls all the urls in the current sitemap'
+  task :crawl => [:setup, :cleanup] do
+    scout = Girlscout.new(Rails.root.join('public/sitemap.xml'))
+    responses = scout.crawl
+    if responses.empty?
+      puts "No URIs found in sitemap.xml"
+    else
+      puts "Results:"
+      responses.each do |response, url_ary|
+        FileUtils.touch(Rails.root.join("db/data/girlscout/#{response}.yml"))
+        yml = File.new(Rails.root.join("db/data/girlscout/#{response}.yml"), "r+")
+        url_ary.each do |url|
+          yml.puts url
+        end
+        puts "#{response}: #{url_ary.count}"
+      end
+    end
+  end
+
+  desc 'Cleans up girlscout directory'
+  task :cleanup do
+    FileUtils.rm_r(Dir.glob(Rails.root.join("db/data/girlscout/*")))
+  end
 end
