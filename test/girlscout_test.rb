@@ -26,6 +26,22 @@ class TestGirlscout < Test::Unit::TestCase
     assert(expected, scout.crawl)
   end
   
+  def test_crawl_with_host
+    scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
+    expected = {"error"=>["http://www.foodandwine.com/will|be|error"],
+     "404"=>
+      ["http://www.google.com/promo/?cid=button",
+       "http://www.google.com/slideshows/spring-produce",
+       "http://www.google.com/slideshows/spring-produce/3",
+       "http://www.google.com/slideshows/gail-simmons-passover/4",
+       "http://www.google.com/cookingguides/easter-passover",
+       "http://www.google.com/slideshows/lamb/19",
+       "http://www.google.com/slideshows/peas",
+       "http://www.google.com/willbe404"],
+     "200"=>["http://www.google.com", "http://www.google.com/"]}
+    assert_equal(expected, scout.crawl("www.google.com"))
+  end
+  
   def test_responses
     scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
     expected = {"error"=>["http://www.foodandwine.com/will|be|error"],
@@ -55,6 +71,6 @@ class TestGirlscout < Test::Unit::TestCase
   def test_responses_no_crawl
     scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
     
-    assert_raise(StandardError) {scout.responses}
+    assert_raise(StandardError) {scout.responses}    
   end
 end

@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'nokogiri'
-require 'open-uri'
 require 'net/http'
+require 'uri'
 
 class Girlscout
   attr_reader :file
@@ -14,7 +14,7 @@ class Girlscout
     @responses = Hash.new
   end
   
-  def crawl(subdomain = nil)
+  def crawl(host = nil)
     @responses = Hash.new
     paths = Array.new
     @file = File.open(@file)
@@ -24,19 +24,20 @@ class Girlscout
     doc.xpath("//urlset/url/loc").each do |uri|
       uri = uri.content
       begin
-        response = Net::HTTP.get_response(URI.parse(uri))
-        @responses[response.code] = [] if !@responses.has_key?(response.code)
-        @responses[response.code] << uri
+        uri = URI.parse(uri)
+        uri.host = host if host
+        response = Net::HTTP.get_response(uri).code
+        uri = uri.to_s
         print "."
       rescue Timeout::Error => e
-        @responses["timeout"] = [] if !@responses.has_key?("timeout")
-        @responses["timeout"] << uri
+        response = "timeout"
         print "T"
       rescue URI::InvalidURIError
-        @responses["error"] = [] if !@responses.has_key?("error")
-        @responses["error"] << uri
+        response = "error"
         print "E"
       end
+      @responses[response] = [] if !@responses.has_key?(response)
+      @responses[response] << uri
     end
     puts "\n"
     return @responses
