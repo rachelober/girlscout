@@ -17,8 +17,9 @@ namespace :girlscout do
   task :crawl => [:setup] do
     file = ENV['file'] || 'public/sitemap.xml'
     host = ENV['host'] || nil
+    port = ENV['port'] || nil
     scout = Girlscout.new(Rails.root.join(file))
-    responses = scout.crawl(host)
+    responses = scout.crawl(host, port)
     if responses.empty?
       puts "No URIs found in sitemap"
     else

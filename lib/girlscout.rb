@@ -14,7 +14,7 @@ class Girlscout
     @responses = Hash.new
   end
   
-  def crawl(host = nil)
+  def crawl(host = nil, port = nil)
     @responses = Hash.new
     paths = Array.new
     @file = File.open(@file)
@@ -26,6 +26,7 @@ class Girlscout
       begin
         uri = URI.parse(uri)
         uri.host = host if host
+        uri.port = port if port
         response = Net::HTTP.get_response(uri).code
         uri = uri.to_s
         print "."
