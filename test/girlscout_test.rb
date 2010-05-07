@@ -5,11 +5,9 @@ require 'fileutils'
 
 class TestGirlscout < Test::Unit::TestCase
   def setup
-    FileUtils.chmod(0000, File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample_not_readable.xml")))
   end
   
   def teardown
-    FileUtils.chmod(0755, File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample_not_readable.xml")))
   end
   
   def test_file_not_found
@@ -17,13 +15,42 @@ class TestGirlscout < Test::Unit::TestCase
   end
   
   def test_file_not_readable
+    FileUtils.chmod(0000, File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample_not_readable.xml")))
     assert_raise(ArgumentError) {Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample_not_readable.xml")))}
+    FileUtils.chmod(0755, File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample_not_readable.xml")))
+  end
+  
+  def test_parse_urls
+    scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
+    expected = ["http://www.foodandwine.com",
+       "http://www.foodandwine.com/",
+       "http://www.foodandwine.com/promo/?cid=button",
+       "http://www.foodandwine.com/slideshows/spring-produce",
+       "http://www.foodandwine.com/slideshows/spring-produce/3",
+       "http://www.foodandwine.com/slideshows/gail-simmons-passover/4",
+       "http://www.foodandwine.com/cookingguides/easter-passover",
+       "http://www.foodandwine.com/slideshows/lamb/19",
+       "http://www.foodandwine.com/slideshows/peas",
+       "http://www.foodandwine.com/willbe404",
+       "http://www.foodandwine.com/will|be|error"]
+    assert_equal(expected, scout.parse_urls)
   end
   
   def test_crawl
     scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
-    expected = {"404"=>["http://www.foodandwine.com/ururjrnrkrlri"], "200"=>["http://www.foodandwine.com", "http://www.foodandwine.com/", "http://www.foodandwine.com/promo/?cid=button", "http://www.foodandwine.com/slideshows/spring-produce", "http://www.foodandwine.com/slideshows/spring-produce/3", "http://www.foodandwine.com/slideshows/gail-simmons-passover/4", "http://www.foodandwine.com/cookingguides/easter-passover", "http://www.foodandwine.com/slideshows/lamb/19", "http://www.foodandwine.com/slideshows/peas"]}
-    assert(expected, scout.crawl)
+    expected = {"error"=>["http://www.foodandwine.com/will|be|error"],
+     "404"=>["http://www.foodandwine.com/willbe404"],
+     "200"=>
+      ["http://www.foodandwine.com",
+       "http://www.foodandwine.com/",
+       "http://www.foodandwine.com/promo/?cid=button",
+       "http://www.foodandwine.com/slideshows/spring-produce",
+       "http://www.foodandwine.com/slideshows/spring-produce/3",
+       "http://www.foodandwine.com/slideshows/gail-simmons-passover/4",
+       "http://www.foodandwine.com/cookingguides/easter-passover",
+       "http://www.foodandwine.com/slideshows/lamb/19",
+       "http://www.foodandwine.com/slideshows/peas"]}
+    assert_equal(expected, scout.crawl)
   end
   
   def test_crawl_with_host
@@ -72,5 +99,36 @@ class TestGirlscout < Test::Unit::TestCase
     scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
     
     assert_raise(StandardError) {scout.responses}    
+  end
+  
+  def test_crawl_with_start
+    scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
+    expected = {"error"=>["http://www.foodandwine.com/will|be|error"],
+     "404"=>["http://www.foodandwine.com/willbe404"],
+     "200"=>
+      ["http://www.foodandwine.com/promo/?cid=button",
+       "http://www.foodandwine.com/slideshows/spring-produce",
+       "http://www.foodandwine.com/slideshows/spring-produce/3",
+       "http://www.foodandwine.com/slideshows/gail-simmons-passover/4",
+       "http://www.foodandwine.com/cookingguides/easter-passover",
+       "http://www.foodandwine.com/slideshows/lamb/19",
+       "http://www.foodandwine.com/slideshows/peas"]}
+    
+    assert_equal(expected, scout.crawl(nil, nil, 2))
+  end
+  
+  def test_crawl_with_limit
+    scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
+    expected = {"200" => ["http://www.foodandwine.com", "http://www.foodandwine.com/"]}
+    
+    assert_equal(expected, scout.crawl(nil, nil, 0, 2))
+  end
+  
+  def test_crawl_with_start_and_limit
+    scout = Girlscout.new(File.expand_path(File.join(File.dirname(__FILE__), "/sitemaps/sample.xml")))
+    expected = {"200"=> ["http://www.foodandwine.com/promo/?cid=button",
+      "http://www.foodandwine.com/slideshows/spring-produce"]}
+    
+    assert_equal(expected, scout.crawl(nil, nil, 2, 2))
   end
 end

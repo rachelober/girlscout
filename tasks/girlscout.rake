@@ -1,8 +1,6 @@
 require File.expand_path(File.join(File.dirname(__FILE__), "../lib/girlscout.rb"))
 require 'fileutils'
 
-DIR = Time.now.strftime("%Y%m%d%H%M%S")
-
 namespace :girlscout do
   desc 'Sets up Girlscout'
   task :setup do
@@ -16,26 +14,14 @@ namespace :girlscout do
   desc 'Crawls all the urls in the current sitemap'
   task :crawl => [:setup] do
     file = ENV['file'] || 'public/sitemap.xml'
-    host = ENV['host'] || nil
-    port = ENV['port'] || nil
+    host = ENV['host']
+    port = ENV['port']
+    chunk = ENV['chunk']
+    wait = ENV['wait']
+    dir = ENV['dir']
     scout = Girlscout.new(Rails.root.join(file))
-    responses = scout.crawl(host, port)
-    if responses.empty?
-      puts "No URIs found in sitemap"
-    else
-      results = File.new(Rails.root.join("db/data/girlscout/#{DIR}/results.yml"), "w+")
-      results.puts "Results for #{file}:"
-      responses.each do |response, url_ary|
-        yml = File.open(Rails.root.join("db/data/girlscout/#{DIR}/#{response}.yml"), "w+")
-        url_ary.each do |url|
-          yml.puts url
-        end
-        results.puts "#{response}: #{url_ary.size}"
-      end
-      puts "\n"
-      results.rewind
-      results.each {|x| puts x}
-      results.close
-    end
+    scout.parse_urls!
+    scout.crawl!(host, port, start, limit, wait)
+    scout.print_responses(dir)
   end
 end

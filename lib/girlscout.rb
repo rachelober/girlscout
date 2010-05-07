@@ -3,6 +3,7 @@ require 'rubygems'
 require 'nokogiri'
 require 'net/http'
 require 'uri'
+require 'fileutils'
 
 class Girlscout
   attr_reader :file
@@ -12,22 +13,38 @@ class Girlscout
     raise ArgumentError.new("File #{file} is not readable.") if !File.readable?(file)
     @file = file
     @responses = Hash.new
+    @urls = Array.new
   end
   
-  def crawl(host = nil, port = nil)
-    @responses = Hash.new
-    paths = Array.new
-    @file = File.open(@file)
-    doc = Nokogiri::XML(@file)
+  def parse_urls
+    urls = Array.new
+    file = File.open(@file)
+    doc = Nokogiri::XML(file)
     doc.remove_namespaces!
-    puts "\nLooking through your sitemap (this could take a while)\n"
+    puts "\nLooking through your sitemap (this could take a few minutes)\n"
     doc.xpath("//urlset/url/loc").each do |uri|
-      uri = uri.content
+      urls << uri.content
+    end
+    file.close
+    return urls
+  end
+  
+  def parse_urls!
+    return @urls = parse_urls
+  end
+  
+  def crawl(host = nil, port = nil, start = 0, limit = 50000, wait = nil)
+    raise StandardError.new("Please run a parse_urls! first.") if @urls.empty?
+    responses = Hash.new
+    urls = @urls[start..(start+limit-1)]
+    puts "\nTesting responses to host\n"
+    urls.each do |uri|
       begin
         uri = URI.parse(uri)
         uri.host = host if host
         uri.port = port if port
         response = Net::HTTP.get_response(uri).code
+        sleep(wait) if wait
         uri = uri.to_s
         print "."
       rescue Timeout::Error => e
@@ -37,11 +54,16 @@ class Girlscout
         response = "error"
         print "E"
       end
-      @responses[response] = [] if !@responses.has_key?(response)
-      @responses[response] << uri
+      responses[response] = [] if !responses.has_key?(response)
+      responses[response] << uri
     end
+    STDOUT.flush
     puts "\n"
-    return @responses
+    return responses
+  end
+  
+  def crawl!(host = nil, port = nil, start = 0, limit = 50000, wait = nil)
+    return @responses = crawl(host, port, start, limit, wait)
   end
   
   def responses(response_code = nil)
@@ -50,6 +72,31 @@ class Girlscout
       return @responses.has_key?(response_code) ? @responses[response_code] : nil
     else
       return @responses
+    end
+  end
+  
+  def print_responses(dir = nil)
+    Girlscout.print_responses(@responses, dir)
+  end
+  
+  def Girlscout.print_responses(responses, dir = nil)
+    dir = dir || Time.now.strftime("%Y%m%d%H%M%S")
+    FileUtils.mkdir_p(Rails.root.join("db/data/girlscout/#{dir}"))
+    if responses.empty?
+      puts "No URIs found in sitemap"
+    else
+      results = File.new(Rails.root.join("db/data/girlscout/#{dir}/results.yml"), "a+")
+      results.puts "Results:"
+      responses.each do |response, urls|
+        yml = File.open(Rails.root.join("db/data/girlscout/#{dir}/#{response}.yml"), "a+")
+        urls.each do |url|
+          yml.puts url
+        end
+        yml.close
+        results.puts "#{response}: #{urls.size}"
+      end
+      puts "\n"
+      results.close
     end
   end
 end
