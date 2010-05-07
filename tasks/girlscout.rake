@@ -4,7 +4,6 @@ require 'fileutils'
 namespace :girlscout do
   desc 'Sets up Girlscout'
   task :setup do
-    FileUtils.mkdir_p(Rails.root.join("db/data/girlscout/#{DIR}"))
     if !File.exists?(Rails.root.join("public/sitemap.xml"))
       FileUtils.cp(Rails.root.join("vendor/plugins/girlscout/samples/sitemap.xml"), Rails.root.join("public/sitemap.xml"))
       puts "A sample sitemap.xml has been placed in your /public directory. Please edit it with the urls you would like to crawl."
