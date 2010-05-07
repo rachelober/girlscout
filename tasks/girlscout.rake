@@ -20,7 +20,7 @@ namespace :girlscout do
     dir = ENV['dir']
     scout = Girlscout.new(Rails.root.join(file))
     scout.parse_urls!
-    scout.crawl!(host, port, nil, nil, wait)
+    scout.crawl!(host, port, 0, 50000, wait)
     scout.print_responses(dir)
   end
 end
