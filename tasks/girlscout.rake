@@ -16,7 +16,7 @@ namespace :girlscout do
     host = ENV['host']
     port = ENV['port']
     chunk = ENV['chunk']
-    wait = ENV['wait']
+    wait = ENV['wait'].to_i
     dir = ENV['dir']
     scout = Girlscout.new(Rails.root.join(file))
     scout.parse_urls!
