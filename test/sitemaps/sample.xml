@@ -1,38 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset>
   <url>
-    <loc>http://www.foodandwine.com</loc>
-    <lastmod>2010-03-26T10:29:46-05:00</lastmod>
+    <loc>http://example.com/test1</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/</loc>
-    <lastmod>2010-03-26T10:29:46-05:00</lastmod>
+    <loc>http://example.com/test2</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/promo/?cid=button</loc>
+    <loc>http://example.com/test3</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/slideshows/spring-produce</loc>
+    <loc>http://example.com/test4</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/slideshows/spring-produce/3</loc>
+    <loc>http://example.com/test5</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/slideshows/gail-simmons-passover/4</loc>
+    <loc>http://example.com/test6</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/cookingguides/easter-passover</loc>
+    <loc>http://example.com/test7</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/slideshows/lamb/19</loc>
+    <loc>http://example.com/test8</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/slideshows/peas</loc>
+    <loc>http://example.com/test9</loc>
   </url>
   <url>
-    <loc>http://www.foodandwine.com/willbe404</loc>
-  </url>
-  <url>
-    <loc>http://www.foodandwine.com/will|be|error</loc>
+    <loc>http://example.com/test|</loc>
   </url>
 </urlset>

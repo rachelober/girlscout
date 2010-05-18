@@ -6,7 +6,7 @@ require 'uri'
 require 'fileutils'
 
 class Girlscout
-  attr_reader :file
+  attr_reader :file, :urls
   
   def initialize(file)
     raise ArgumentError.new("Can't find #{file}.") if !File.exists?(file)
@@ -81,22 +81,23 @@ class Girlscout
   
   def Girlscout.print_responses(responses, dir = nil)
     dir = dir || Time.now.strftime("%Y%m%d%H%M%S")
-    FileUtils.mkdir_p(Rails.root.join("db/data/girlscout/#{dir}"))
     if responses.empty?
       puts "No URIs found in sitemap"
     else
-      results = File.new(Rails.root.join("db/data/girlscout/#{dir}/results.yml"), "a+")
-      results.puts "Results:"
+      FileUtils.mkdir_p(Rails.root.join("db/data/girlscout/#{dir}"))
+      FileUtils.touch(Rails.root.join("db/data/girlscout/#{dir}/results.yml"))
+      results = File.open( Rails.root.join("db/data/girlscout/#{dir}/results.yml") ) { |yf| YAML::load(yf) } || Hash.new()
       responses.each do |response, urls|
+        results[response] = results.has_key?(response) ? results[response] + urls.size : urls.size
         yml = File.open(Rails.root.join("db/data/girlscout/#{dir}/#{response}.yml"), "a+")
         urls.each do |url|
           yml.puts url
         end
         yml.close
-        results.puts "#{response}: #{urls.size}"
       end
-      puts "\n"
-      results.close
+      File.open( Rails.root.join("db/data/girlscout/#{dir}/results.yml"), 'w' ) do |out|
+        YAML.dump( results, out )
+      end
     end
   end
 end

@@ -15,12 +15,18 @@ namespace :girlscout do
     file = ENV['file'] || 'public/sitemap.xml'
     host = ENV['host']
     port = ENV['port']
-    chunk = ENV['chunk']
+    chunk = ENV['chunk'].to_i || 50000
     wait = ENV['wait'].to_i
     dir = ENV['dir']
     scout = Girlscout.new(Rails.root.join(file))
     scout.parse_urls!
-    scout.crawl!(host, port, 0, 50000, wait)
-    scout.print_responses(dir)
+    start = 0
+    
+    while start < scout.urls.size
+      limit = chunk
+      scout.crawl!(host, port, start, limit, wait)
+      scout.print_responses(dir)
+      start = start + limit
+    end
   end
 end
