@@ -15,8 +15,8 @@ namespace :girlscout do
     file = ENV['file'] || 'public/sitemap.xml'
     host = ENV['host']
     port = ENV['port']
-    chunk = ENV['chunk'].to_i || 50000
-    wait = ENV['wait'].to_i
+    chunk = ENV['chunk'] ? ENV['chunk'].to_i : 50000
+    wait = ENV['wait'] ? ENV['wait'].to_i : 3
     dir = ENV['dir']
     scout = Girlscout.new(Rails.root.join(file))
     scout.parse_urls!
